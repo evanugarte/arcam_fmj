@@ -19,10 +19,10 @@ async def run():
         state = State(client, zone)
         # await state.set_power
         # state.set_power
-        await state.set_power(False)
+        await state.set_power(True)
         # huh = state.get_power()
         # print(huh, 'yahoo')
-        # await state.set_volume(4)
+        # await state.set_volume(30)
         # await state.set_power(True)
         # await state.set_source(source)
 

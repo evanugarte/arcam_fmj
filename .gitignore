@@ -7,4 +7,4 @@ dist
 .coverage
 .mypy_cache
 venv
-/Python-3.9.1/
+notes.md
