@@ -20,9 +20,9 @@ async def run():
         # await state.set_power
         # state.set_power
         await state.set_power(False)
-        huh = state.get_power()
-        print(huh, 'yahoo')
-        await state.set_volume(4)
+        # huh = state.get_power()
+        # print(huh, 'yahoo')
+        # await state.set_volume(4)
         # await state.set_power(True)
         # await state.set_source(source)
 

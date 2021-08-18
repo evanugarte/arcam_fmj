@@ -458,7 +458,7 @@ class CommandPacket():
             0x01,
             0x00,
             0x01,
-            0xF0,
+            0x02,
             0x0D
         ])
 
@@ -530,16 +530,8 @@ async def _write_packet(writer: asyncio.StreamWriter,
                         packet: Union[CommandPacket,
                                       ResponsePacket]) -> None:
     try:
-        # data = packet.to_bytes()
-        data =  bytes([
-            0x21,
-            0x01,
-            0x00,
-            0x01,
-            0xF0,
-            0x0D
-        ])
-        print('talking to ', data)
+        data = packet.to_bytes()
+        print('writing', data)
         writer.write(data)
         await asyncio.wait_for(writer.drain(), _WRITE_TIMEOUT)
     except asyncio.TimeoutError as exception:
