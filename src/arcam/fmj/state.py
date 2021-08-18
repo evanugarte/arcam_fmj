@@ -206,7 +206,7 @@ class State():
         command = self.get_rc5code(RC5CODE_POWER, power)
         if power:
             await self._client.request(
-                self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+                self._zn, CommandCodes.POWER, bytes([CommandCodes.HEADPHONES]))
         else:
             # seed with a response, since device might not
             # respond in timely fashion, so let's just
