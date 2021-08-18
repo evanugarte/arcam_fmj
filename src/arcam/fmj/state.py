@@ -163,7 +163,7 @@ class State():
                 command = RC5Codes.POWER_ON_ZONE2
 
             await self._client.request(
-                self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command.value)
+                self._zn, CommandCodes.POWER, command.value)
         else:
             if self._zn == 1:
                 command = RC5Codes.POWER_OFF
