@@ -219,6 +219,16 @@ class CommandCodes(IntOrTypeEnum):
     REBOOT = 0x26
 
 
+class SA10SourceCodes(IntOrTypeEnum):
+    PHONO = 0x01
+    AUX = 0x02
+    PVR = 0x03
+    AV = 0x04
+    STB = 0x05
+    CD = 0x06
+    BD = 0x07
+    SAT = 0x08
+
 class SourceCodes(IntOrTypeEnum):
     FOLLOW_ZONE_1 = 0x00
     CD = 0x01
