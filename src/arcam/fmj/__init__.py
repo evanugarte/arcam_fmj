@@ -731,7 +731,6 @@ async def write_packet(writer: asyncio.StreamWriter,
                                      AmxDuetResponse]) -> None:
     try:
         data = packet.to_bytes()
-        print('writing', data)
         writer.write(data)
         await asyncio.wait_for(writer.drain(), _WRITE_TIMEOUT)
     except asyncio.TimeoutError as exception:

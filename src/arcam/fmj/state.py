@@ -22,6 +22,7 @@ from . import (
     ResponseException,
     ResponsePacket,
     SourceCodes,
+    SA10SourceCodes,
     RC5CODE_SOURCE,
     RC5CODE_POWER,
     RC5CODE_MUTE,
@@ -196,8 +197,13 @@ class State():
                 raise ValueError("Decode mode not supported at this time")
             await self.set_decode_mode_mch(mode)
 
-    def get_power(self) -> Optional[bool]:
-        value = self._state.get(CommandCodes.POWER)
+    async def get_power(self, use_state=True) -> Optional[bool]:
+        value = None
+        if use_state:
+            value = self._state.get(CommandCodes.POWER)
+        else:
+            value = await self._client.request(
+                self._zn, CommandCodes.POWER, bytes([0xF0]))
         if value is None:
             return None
         return int.from_bytes(value, 'big') == 0x01
@@ -230,22 +236,43 @@ class State():
             return None
         return MenuCodes.from_bytes(value)
 
-    def get_mute(self) -> Optional[bool]:
-        value = self._state.get(CommandCodes.MUTE)
+    async def get_mute(self, use_state=True) -> Optional[bool]:
+        value = None
+        if use_state:
+            value = self._state.get(CommandCodes.MUTE)
+        else:
+            value = await self._client.request(
+                self._zn, CommandCodes.MUTE, bytes([0xF0]))
         if value is None:
             return None
         return int.from_bytes(value, 'big') == 0
 
-    async def set_mute(self, mute: bool) -> None:
-        command = self.get_rc5code(RC5CODE_MUTE, mute)
-        await self._client.request(
-            self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+    async def set_mute(self, mute: bool, use_rc5=True) -> None:
+        if use_rc5:
+            command = self.get_rc5code(RC5CODE_MUTE, mute)
+            await self._client.request(
+                self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+        else:
+            mute_value = 0x0 if mute else 0x1
+            x = await self._client.request(
+                self._zn, CommandCodes.MUTE, bytes([mute_value]))
+            print('wtf', x)
 
-    def get_source(self) -> Optional[SourceCodes]:
-        value = self._state.get(CommandCodes.CURRENT_SOURCE)
+    async def toggle_mute(self) -> None:
+        await self._client.request(
+            self._zn, CommandCodes.MUTE, bytes([CommandCodes.HEADPHONES]))
+
+    async def get_source(self, use_state=True, use_sa10=False) -> Optional[SourceCodes]:
+        value = None
+        if use_state:
+            value = self._state.get(CommandCodes.CURRENT_SOURCE)
+        else:
+            value = await self._client.request(
+                self._zn, CommandCodes.CURRENT_SOURCE, bytes([0xF0]))
         if value is None:
             return None
-        return SourceCodes.from_int(
+        correct_enum = SA10SourceCodes if use_sa10 else SourceCodes 
+        return correct_enum.from_int(
             int.from_bytes(value, 'big'))
 
     def get_source_list(self) -> List[SourceCodes]:
@@ -259,14 +286,20 @@ class State():
         else:
             await self._client.request(
                 self._zn, CommandCodes.CURRENT_SOURCE, bytes([src]))
-    def get_volume(self) -> Optional[int]:
-        value = self._state.get(CommandCodes.VOLUME)
+
+    async def get_volume(self, use_state=True) -> Optional[int]:
+        value = None
+        if use_state:
+            value = self._state.get(CommandCodes.VOLUME)
+        else:
+            value = await self._client.request(
+                self._zn, CommandCodes.VOLUME, bytes([0xF0]))
         if value is None:
             return None
         return int.from_bytes(value, 'big')
 
     async def set_volume(self, volume: int) -> None:
-        await self._client.request(
+        return await self._client.request(
             self._zn, CommandCodes.VOLUME, bytes([volume]))
 
     async def inc_volume(self) -> None:
