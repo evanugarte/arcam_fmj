@@ -251,11 +251,14 @@ class State():
     def get_source_list(self) -> List[SourceCodes]:
         return list(RC5CODE_SOURCE[(self._api_model, self._zn)].keys())
 
-    async def set_source(self, src: SourceCodes) -> None:
-        command = self.get_rc5code(RC5CODE_SOURCE, src)
-        await self._client.request(
-            self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
-
+    async def set_source(self, src: SourceCodes, use_rc5=True) -> None:
+        if use_rc5:
+            command = self.get_rc5code(RC5CODE_SOURCE, src)
+            await self._client.request(
+                self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+        else:
+            await self._client.request(
+                self._zn, CommandCodes.CURRENT_SOURCE, bytes([src]))
     def get_volume(self) -> Optional[int]:
         value = self._state.get(CommandCodes.VOLUME)
         if value is None:
