@@ -202,11 +202,15 @@ class State():
             return None
         return int.from_bytes(value, 'big') == 0x01
 
-    async def set_power(self, power: bool) -> None:
+    async def set_power(self, power: bool, use_rc5=True) -> None:
         command = self.get_rc5code(RC5CODE_POWER, power)
         if power:
-            await self._client.request(
-                self._zn, CommandCodes.POWER, bytes([CommandCodes.HEADPHONES]))
+            if use_rc5:
+                await self._client.request(
+                    self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+            else:
+                await self._client.request(
+                    self._zn, CommandCodes.POWER, bytes([CommandCodes.DISPLAY_BRIGHTNESS]))
         else:
             # seed with a response, since device might not
             # respond in timely fashion, so let's just
@@ -215,6 +219,10 @@ class State():
             self._state[CommandCodes.POWER] = bytes([0])
             await self._client.send(
                 self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+
+    async def toggle_power(self) -> None:
+        await self._client.request(
+            self._zn, CommandCodes.POWER, bytes([CommandCodes.HEADPHONES]))
 
     def get_menu(self) -> Optional[MenuCodes]:
         value = self._state.get(CommandCodes.MENU)
