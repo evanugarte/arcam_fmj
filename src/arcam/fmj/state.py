@@ -62,12 +62,12 @@ class State():
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.stop()
 
-    def to_dict(self):
+    async def to_dict(self):
         return {
-            'POWER': self.get_power(),
-            'VOLUME': self.get_volume(),
-            'SOURCE': self.get_source(),
-            'MUTE': self.get_mute(),
+            'POWER': await self.get_power(),
+            'VOLUME': await self.get_volume(),
+            'SOURCE': await self.get_source(),
+            'MUTE': await self.get_mute(),
             'MENU': self.get_menu(),
             'INCOMING_AUDIO_FORMAT': self.get_incoming_audio_format(),
             'DECODE_MODE_2CH': self.get_decode_mode_2ch(),
@@ -80,7 +80,7 @@ class State():
         }
 
     def __repr__(self):
-        return "State ({}) Amx ({})".format(self.to_dict(), self._amxduet.values)
+        return "State Amx"
 
     def _listen(self, packet: Union[ResponsePacket, AmxDuetResponse]):
         if isinstance(packet, AmxDuetResponse):
