@@ -197,6 +197,7 @@ class CommandCodes(IntOrTypeEnum):
     DISPLAY_INFORMATION_TYPE = 0x09
     CURRENT_SOURCE = 0x1D  # Request
     HEADPHONES_OVERRIDE = 0x1F
+    REQUEST_METRIC = 0xF0
 
 
     # Input Commands

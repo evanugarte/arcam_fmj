@@ -69,12 +69,12 @@ class State():
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.stop()
 
-    def to_dict(self) -> Dict[str, Any]:
+    async def to_dict(self) -> Dict[str, Any]:
         return {
-            'POWER': self.get_power(),
-            'VOLUME': self.get_volume(),
-            'SOURCE': self.get_source(),
-            'MUTE': self.get_mute(),
+            'POWER': await self.get_power(),
+            'VOLUME': await self.get_volume(),
+            'SOURCE': await self.get_source(),
+            'MUTE': await self.get_mute(),
             'MENU': self.get_menu(),
             'INCOMING_AUDIO_FORMAT': self.get_incoming_audio_format(),
             'DECODE_MODE_2CH': self.get_decode_mode_2ch(),
@@ -164,6 +164,10 @@ class State():
         command = self.get_rc5code(RC5CODE_DECODE_MODE_MCH, mode)
         await self._client.request(
             self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
+    
+    async def query_metric_from_device(self, metric: CommandCodes):
+        return await self._client.request(
+                self._zn, metric, bytes([CommandCodes.REQUEST_METRIC]))
 
     def get_2ch(self) -> bool:
         """Return if source is 2 channel or not."""
@@ -204,10 +208,10 @@ class State():
                 raise ValueError("Decode mode not supported at this time")
             await self.set_decode_mode_mch(mode)
 
-    def get_power(self) -> Optional[bool]:
+    async def get_power(self) -> Optional[bool]:
         value = self._state.get(CommandCodes.POWER)
         if value is None:
-            return None
+            value = await self.query_metric_from_device(CommandCodes.POWER)
         return int.from_bytes(value, 'big') == 0x01
 
     async def set_power(self, power: bool) -> None:
@@ -237,10 +241,10 @@ class State():
             return None
         return MenuCodes.from_bytes(value)
 
-    def get_mute(self) -> Optional[bool]:
+    async def get_mute(self) -> Optional[bool]:
         value = self._state.get(CommandCodes.MUTE)
         if value is None:
-            return None
+            value = await self.query_metric_from_device(CommandCodes.MUTE)
         return int.from_bytes(value, 'big') == 0
 
     async def set_mute(self, mute: bool) -> None:
@@ -253,15 +257,11 @@ class State():
             await self._client.request(
                 self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
 
-    def get_source(self) -> Optional[SourceCodes]:
+    async def get_source(self) -> Optional[SourceCodes]:
         value = self._state.get(CommandCodes.CURRENT_SOURCE)
         if value is None:
-            return None
-        correct_enum = SOURCE_CODES.get((self._api_model, self._zn), {})
-        source = correct_enum.get(value)
-        if source is None:
-            return None
-        return int.from_bytes(source, 'big')
+            value = await self.query_metric_from_device(CommandCodes.CURRENT_SOURCE)
+        return int.from_bytes(value, 'big')
 
     def get_source_list(self) -> List[SourceCodes]:
         return list(RC5CODE_SOURCE[(self._api_model, self._zn)].keys())
@@ -279,10 +279,10 @@ class State():
             await self._client.request(
                 self._zn, CommandCodes.SIMULATE_RC5_IR_COMMAND, command)
 
-    def get_volume(self) -> Optional[int]:
+    async def get_volume(self) -> Optional[int]:
         value = self._state.get(CommandCodes.VOLUME)
         if value is None:
-            return None
+            value = await self.query_metric_from_device(CommandCodes.VOLUME)
         return int.from_bytes(value, 'big')
 
     async def set_volume(self, volume: int) -> None:
